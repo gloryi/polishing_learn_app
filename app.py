@@ -34,17 +34,20 @@ progression = Progression(Y,
                           time_to_appear,
                           new_line_counter,
                           upper_stats)
+is_finished = False
  
+fpsClock = pygame.time.Clock()
 for time_delta in delta_timer:
+    fpsClock.tick(60)
     display_surface.fill(white)
 
     if new_line_counter.is_tick(time_delta):
-        sixtlets.add_line()
+        is_finished = sixtlets.add_line()
 
     feedback = sixtlets.tick(pixels_per_ms * time_delta)
 
     resume_game = progression.register_event(feedback)
-    if not resume_game:
+    if not resume_game or is_finished:
         break
 
     pixels_per_ms = progression.synchronize_speed()

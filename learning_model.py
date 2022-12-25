@@ -32,11 +32,10 @@ class SemanticUnit():
     def __increment(self):
         self.learning_score += 1
             
-
     def __decrement(self):
         self.learning_score -= 1 
-        if self.learning_score <= 98:
-            self.learning_score = 98
+        if self.learning_score <= 100:
+            self.learning_score = 100
 
     def activate(self):
         self.activated = True
@@ -52,12 +51,10 @@ class SemanticUnit():
             return selected
 
     def deactivate(self, positive_feedback = False):
-        if self.activated:
+        if positive_feedback:
+            self.__increment()
 
-            if positive_feedback:
-                self.__increment()
-            else:
-                self.__decrement()
+        if not positive_feedback:
+            self.__decrement()
 
         self.activated = False
-

@@ -3,6 +3,8 @@ from learning_model import SemanticUnit
 from collections import OrderedDict
 from math import sqrt
 from itertools import compress
+import os
+from config import ABSOLUTE_LOCATION
 import random
 
 THREE_PAIRS = 3
@@ -16,7 +18,7 @@ class SixtletsProducer():
         self.csv_path = csv_path
         self.label = label 
         self.semantic_units = self.prepare_data()
-        self.batch = random.sample(self.semantic_units, 20)
+        self.batch = random.sample(self.semantic_units, 15)
 
         self.ui_ref = ui_ref
 
@@ -25,7 +27,7 @@ class SixtletsProducer():
 
     def update_progress(self):
         if not self.ui_ref is None:
-            target_min_score = 101
+            target_min_score = 102
             all_units = len(self.batch)
             units_before_score  = len([_ for _ in self.batch if _.learning_score >= target_min_score])
 
@@ -43,8 +45,12 @@ class SixtletsProducer():
 
     def resample(self):
         self.semantic_units.sort(key = lambda _ : _.learning_score)
-        self.batch = random.sample(self.semantic_units[:len(self.semantic_units)//3], 20)
+        self.batch = random.sample(self.semantic_units[:len(self.semantic_units)//2], 15)
 
+    def is_finished(self):
+        if len([_ for _ in self.semantic_units if _.learning_score >= 102]) >= len(self.semantic_units) -4:
+            return True
+        return False
 
 
     def produce_three_pairs(self):
@@ -224,6 +230,18 @@ class SixtletDrawer():
         #self.pygame_instance.font.init()
         #self.font = self.pygame_instance.font.SysFont("malgungothic", 50)
         #self.font = self.pygame_instance.font.SysFont("Ms_Song.ttf", 50)
+        font_file = self.pygame_instance.font.match_font("setofont")
+        self.setofont60 = self.pygame_instance.font.Font(font_file, 60)
+        font_file = self.pygame_instance.font.match_font("setofont")
+        self.setofont30 = self.pygame_instance.font.Font(font_file, 30)
+        font_file = self.pygame_instance.font.match_font("setofont")
+        self.setofont25 = self.pygame_instance.font.Font(font_file, 25)
+
+
+        simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "simhei.ttf")
+        self.simhei60 = self.pygame_instance.font.Font(simhei_font_location, 60)
+        self.simhei30 = self.pygame_instance.font.Font(simhei_font_location, 30)
+        self.simhei25 = self.pygame_instance.font.Font(simhei_font_location, 25)
 
     def draw_static_ui_elements(self, horisontals):
         for i in range(1,8):
@@ -263,11 +281,9 @@ class SixtletDrawer():
 
         for geometry in geometries:
             message = geometry.text
-            font_size = 60 if len(message) == 1 else 30 if len(message) < 6 else 25
-            font_file = self.pygame_instance.font.match_font("setofont")
-            self.pygame_instance.font.Font(font_file, font_size)
-            self.font = self.pygame_instance.font.Font("simhei.ttf", font_size)
-            text = self.font.render(message, True, geometry.color, color)
+            renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 6 else self.simhei25
+
+            text = renderer.render(message, True, geometry.color, color)
             textRect = text.get_rect()
             textRect.center = (geometry.x, geometry.y)
 
@@ -367,6 +383,7 @@ class SixtletsProcessor():
                                         self.W,
                                         self.H,
                                         self.cast_point))
+        return self.producer.is_finished()
 
     def update_positions(self, delta_y):
         for line in self.stack:

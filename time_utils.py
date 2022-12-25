@@ -110,18 +110,18 @@ class Progression():
                 self.time_to_see -= 1000 
                 self.time_to_update -= 250 
 
-                if self.time_to_see < 4000:
-                    self.time_to_see = 4000
+                if self.time_to_see < 6000:
+                    self.time_to_see = 6000
 
-                if self.time_to_update < 2000:
-                    self.time_to_update = 2000
+                if self.time_to_update < 2500:
+                    self.time_to_update = 2500
 
             elif self.is_less_intense_required() and not self.correct_event:
                 self.time_to_see += 1000
                 self.time_to_update += 250
                 
-                if self.time_to_see > 15000:
-                    self.time_to_see = 15000
+                if self.time_to_see > 10000:
+                    self.time_to_see = 10000
 
                 if self.time_to_update > 5000:
                     self.time_to_update = 5000
