@@ -15,6 +15,9 @@ class Counter():
     def update_drop(self, new_drop):
         self.drop_time = new_drop
 
+    def get_percent(self):
+        return self.time_elapsed/self.drop_time
+
 def global_timer(pygame_instance):
     last_frame_timestamp = 0
     current_frame_timestamp = pygame_instance.time.get_ticks()

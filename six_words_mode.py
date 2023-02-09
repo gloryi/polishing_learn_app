@@ -9,6 +9,11 @@ import random
 
 THREE_PAIRS = 3
 LAST_EVENT = "POSITIVE"
+
+def hex_to_rgb(h, cache = False):
+    h = h[1:]
+    resulting =  tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    return resulting
 ######################################
 ### DATA PRODUCER
 ######################################
@@ -16,9 +21,9 @@ LAST_EVENT = "POSITIVE"
 class SixtletsProducer():
     def __init__(self, label, csv_path, ui_ref = None):
         self.csv_path = csv_path
-        self.label = label 
+        self.label = label
         self.semantic_units = self.prepare_data()
-        self.batch = random.sample(self.semantic_units, 15)
+        self.batch = random.sample(self.semantic_units, 20)
 
         self.ui_ref = ui_ref
 
@@ -45,7 +50,8 @@ class SixtletsProducer():
 
     def resample(self):
         self.semantic_units.sort(key = lambda _ : _.learning_score)
-        self.batch = random.sample(self.semantic_units[:len(self.semantic_units)//2], 15)
+        #self.batch = random.sample(self.semantic_units[:len(self.semantic_units)//2], 15)
+        self.batch = self.semantic_units[:len(self.semantic_units)//2]
 
     def is_finished(self):
         if len([_ for _ in self.semantic_units if _.learning_score >= 102]) >= len(self.semantic_units) -4:
@@ -109,22 +115,59 @@ class SemanticsLine():
         self.correct = False
         self.error = False
         self.triggered = False
-        
+
+        self.base_color = random.choice([hex_to_rgb("#006663"),
+                                    hex_to_rgb("#18818C"), hex_to_rgb("#343D59"),
+                                    hex_to_rgb("#020659"), hex_to_rgb("#204127"),
+                                    hex_to_rgb("#3B42BF"), hex_to_rgb("#092140"),
+                                     hex_to_rgb("#89199E")])
+        self.rrise = False
+        self.grise = True
+        self.brise = True
+
         self.keys_assotiated = [False for i in range(6)]
 
         self.feedback = None
 
     def move_vertically(self, delta_y):
         self.position_y += delta_y
+        # if self.rrise:
+        #     self.base_color[0]+= 1
+        # else:
+        #     self.base_color[0]-=3
+        # if self.base_color[0]> 250:
+        #     self.rrise = False
+        # if self.base_color[0] < 10:
+        #     self.rrise = True
+        #
+        # if self.brise:
+        #     self.base_color[1]+= 2
+        # else:
+        #     self.base_color[1]-=2
+        # if self.base_color[1] > 250:
+        #     self.brise = False
+        # if self.base_color[1] < 10:
+        #     self.brise = True
+        #
+        # if self.grise:
+        #     self.base_color[2]+= 3
+        # else:
+        #     self.base_color[2]-=1
+        # if self.base_color[2]>250:
+        #     self.grise = False
+        # if self.base_color[2] < 10:
+        #     self.grise = True
+        #
+        # self.base_color = [int(_)%255 for _ in self.base_color]
 
     def produce_geometries(self):
         graphical_objects = []
         if not self.triggered:
             for unit, position_x in zip(self.semantic_units, self.x_positions):
                 if unit.active:
-                    color = (255,0,0) 
+                    color = hex_to_rgb("#A60321")
                 else:
-                    color = (0,0,255)
+                    color = self.base_color 
                 graphical_objects.append(WordGraphical(unit.content,
                                                        position_x,
                                                        self.position_y,
@@ -134,7 +177,7 @@ class SemanticsLine():
             for unit in self.semantic_units:
                 if unit.active:
                     active_unit = unit
-            color = (0,0,255)
+            color = hex_to_rgb("#022873")
             for unit, position_x in zip(self.semantic_units, self.x_positions):
                 if unit.key == active_unit.key:
                     graphical_objects.append(WordGraphical(unit.content,
@@ -180,13 +223,13 @@ class SemanticsLine():
             if unit.active:
                 unit.register_error()
         self.feedback = -1
-        
+
     def register_error(self):
         self.correct = False
         self.error = True
         self.register_event()
         self.feedback_negative()
-        
+
     def register_correct(self):
         self.correct = True
         self.error = False
@@ -231,17 +274,21 @@ class SixtletDrawer():
         #self.font = self.pygame_instance.font.SysFont("malgungothic", 50)
         #self.font = self.pygame_instance.font.SysFont("Ms_Song.ttf", 50)
         font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont60 = self.pygame_instance.font.Font(font_file, 60)
+        self.setofont60 = self.pygame_instance.font.Font(font_file, 80, bold=True)
         font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont30 = self.pygame_instance.font.Font(font_file, 30)
+        self.setofont30 = self.pygame_instance.font.Font(font_file, 60, bold=True)
         font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont25 = self.pygame_instance.font.Font(font_file, 25)
+        self.setofont40 = self.pygame_instance.font.Font(font_file, 40, bold=True)
+        font_file = self.pygame_instance.font.match_font("setofont")
+        self.setofont20 = self.pygame_instance.font.Font(font_file, 30, bold=True)
 
 
         simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "simhei.ttf")
-        self.simhei60 = self.pygame_instance.font.Font(simhei_font_location, 60)
-        self.simhei30 = self.pygame_instance.font.Font(simhei_font_location, 30)
-        self.simhei25 = self.pygame_instance.font.Font(simhei_font_location, 25)
+        #simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
+        self.simhei60 = self.pygame_instance.font.Font(simhei_font_location, 85, bold=True)
+        self.simhei30 = self.pygame_instance.font.Font(simhei_font_location, 65, bold=True)
+        self.simhei40 = self.pygame_instance.font.Font(simhei_font_location, 45, bold=True)
+        self.simhei20 = self.pygame_instance.font.Font(simhei_font_location, 35, bold=True)
 
     def draw_static_ui_elements(self, horisontals):
         for i in range(1,8):
@@ -271,19 +318,22 @@ class SixtletDrawer():
 
     def draw_line(self, line):
         geometries = line.produce_geometries()
-        color = (128,128,128)
+        color = hex_to_rgb("#404040")
         if line.active and  line.triggered:
-            color = (0,128,128)
+            color = hex_to_rgb("#F2790F")
         elif line.correct:
-            color = (0,200,0)
+            color = hex_to_rgb("#61A61C")
         elif line.error:
-            color = (200,0,0)
+            color = hex_to_rgb("#D91604")
 
         for geometry in geometries:
             message = geometry.text
-            renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 6 else self.simhei25
+            renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 5 else self.simhei40 if len(message) < 8 else self.simhei20
 
-            text = renderer.render(message, True, geometry.color, color)
+            if line.triggered:
+                text = renderer.render(message, True, geometry.color, color)
+            else:
+                text = renderer.render(message, True, geometry.color)
             textRect = text.get_rect()
             textRect.center = (geometry.x, geometry.y)
 
@@ -304,7 +354,7 @@ class SixtletDrawer():
                     color = (0, 150, 150) if LAST_EVENT == "POSITIVE" else (50, 100, 100)
             else:
                 color = (0,150,100)
-            
+
             self.pygame_instance.draw.rect(self.display_instance,
                                   color,
                                   (self.W//6*i,0,self.W//6*(i+1),self.H))
@@ -352,12 +402,12 @@ class KeyboardSixModel():
                 self.mapping[control_key] = self.process_button(self.mapping[control_key], self.down)
             else:
                 self.mapping[control_key] = self.process_button(self.mapping[control_key], self.up)
-    
+
     def get_keys(self):
         self.get_inputs()
         self.prepare_inputs()
         return self.keys
-                
+
 
 class SixtletsProcessor():
     def __init__(self, W, H, pygame_instance, display_instance, ui_ref, data_label, data_path):
@@ -414,7 +464,7 @@ class SixtletsProcessor():
         self.drawer.draw_static_ui_elements([self.entry_trigger,
                                              self.exit_trigger,
                                              self.action_trigger])
-    
+
     def clean(self):
         self.stack = list(filter(lambda _ : _.position_y < self.despawn_point,
                                  self.stack))
