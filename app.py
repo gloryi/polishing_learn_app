@@ -2,6 +2,7 @@ import pygame
 from time_utils import global_timer, Counter, Progression
 from six_words_mode import SixtletsProcessor
 from config import TEST_LANG_DATA
+from text_morfer import textMorfer
 from ui_elements import UpperLayout
 
 def hex_to_rgb(h, cache = False):
@@ -52,6 +53,7 @@ delta_timer = global_timer(pygame)
 
 new_line_counter = Counter(time_to_appear)
 quadra_timer = Counter(5000)
+morfer_timer = Counter(2000)
 
 upper_stats = UpperLayout(pygame, display_surface, X, Y)
 
@@ -66,8 +68,12 @@ progression = Progression(Y,
 is_finished = False
  
 fpsClock = pygame.time.Clock()
+morfer = textMorfer()
+
 for time_delta in delta_timer:
     fpsClock.tick(140)
+    if morfer_timer.is_tick(time_delta):
+        morfer.update_seed()
     display_surface.fill(white)
 
     if new_line_counter.is_tick(time_delta):
@@ -117,7 +123,7 @@ for time_delta in delta_timer:
     trans_surface.fill((40,0,40))
     trans_surface2.fill((40,0,40))
 
-    exit_trigger = Y - Y//4 - Y//8 - Y//16 + Y//8
+    exit_trigger = Y - Y//4 - Y//8 - Y//16 + X//8
     entry_trigger  = Y - Y//4 - Y//4 + Y//8
     action_trigger = (entry_trigger + exit_trigger)//2
     pygame.draw.circle(trans_surface,

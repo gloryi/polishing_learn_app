@@ -6,9 +6,12 @@ from itertools import compress
 import os
 from config import ABSOLUTE_LOCATION
 import random
+import re
+from text_morfer import textMorfer
 
 THREE_PAIRS = 3
 LAST_EVENT = "POSITIVE"
+morfer = textMorfer()
 
 def hex_to_rgb(h, cache = False):
     h = h[1:]
@@ -270,21 +273,13 @@ class SixtletDrawer():
         self.display_instance = display_instance
         self.W = W
         self.H = H
-        #self.pygame_instance.font.init()
-        #self.font = self.pygame_instance.font.SysFont("malgungothic", 50)
-        #self.font = self.pygame_instance.font.SysFont("Ms_Song.ttf", 50)
-        font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont60 = self.pygame_instance.font.Font(font_file, 80, bold=True)
-        font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont30 = self.pygame_instance.font.Font(font_file, 60, bold=True)
-        font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont40 = self.pygame_instance.font.Font(font_file, 40, bold=True)
-        font_file = self.pygame_instance.font.match_font("setofont")
-        self.setofont20 = self.pygame_instance.font.Font(font_file, 30, bold=True)
-
+        notto_font_location = os.path.join(ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
+        self.nottofont60 = self.pygame_instance.font.Font(notto_font_location, 75, bold=True)
+        self.nottofont30 = self.pygame_instance.font.Font(notto_font_location, 55, bold=True)
+        self.nottofont40 = self.pygame_instance.font.Font(notto_font_location, 35, bold=True)
+        self.nottofont20 = self.pygame_instance.font.Font(notto_font_location, 25, bold=True)
 
         simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "simhei.ttf")
-        #simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
         self.simhei60 = self.pygame_instance.font.Font(simhei_font_location, 85, bold=True)
         self.simhei30 = self.pygame_instance.font.Font(simhei_font_location, 65, bold=True)
         self.simhei40 = self.pygame_instance.font.Font(simhei_font_location, 45, bold=True)
@@ -328,7 +323,13 @@ class SixtletDrawer():
 
         for geometry in geometries:
             message = geometry.text
-            renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 5 else self.simhei40 if len(message) < 8 else self.simhei20
+            if re.findall(r'[\u4e00-\u9fff]+', message):
+                renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 5 else self.simhei40 if len(message) < 8 else self.simhei20
+            else:
+                renderer = self.nottofont60 if len(message) == 1 else self.nottofont30 if len(message) < 5 else self.nottofont40 if len(message) < 8 else self.nottofont20
+
+            if not re.findall(r'[\u4e00-\u9fff]+', message):
+                message = morfer.morf_text(message)
 
             if line.triggered:
                 text = renderer.render(message, True, geometry.color, color)
