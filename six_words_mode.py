@@ -1,82 +1,102 @@
-from utils import extract_bijection_csv
-from learning_model import SemanticUnit
 from collections import OrderedDict
-from math import sqrt
 from itertools import compress
+from math import sqrt
 import os
-from config import ABSOLUTE_LOCATION
 import random
 import re
+
+from utils import extract_bijection_csv, crop_data
+from learning_model import SemanticUnit
+from config import ABSOLUTE_LOCATION
+from config import BACKGROUNDS_DIR
 from text_morfer import textMorfer
 
-THREE_PAIRS = 3
 LAST_EVENT = "POSITIVE"
 morfer = textMorfer()
+N_ROWS = 8
 
-def hex_to_rgb(h, cache = False):
+
+def hex_to_rgb(h):
     h = h[1:]
-    resulting =  tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
+    resulting = tuple(int(h[i:i+2], 16) for i in (0, 2, 4))
     return resulting
 ######################################
-### DATA PRODUCER
+# DATA PRODUCER
 ######################################
 
+
 class SixtletsProducer():
-    def __init__(self, label, csv_path, ui_ref = None):
-        self.csv_path = csv_path
-        self.label = label
-        self.semantic_units = self.prepare_data()
-        self.batch = random.sample(self.semantic_units, 20)
+    def __init__(S, label, csv_path, ui_ref=None):
+        S.csv_path = csv_path
+        S.label = label
+        S.semantic_units = S.prepare_data()
+        S.batch = random.sample(S.semantic_units, 20)
+        S.background_images = S.list_images(BACKGROUNDS_DIR)
 
-        self.ui_ref = ui_ref
+        S.ui_ref = ui_ref
 
-    def prepare_data(self):
-        return [SemanticUnit(bijection) for bijection in extract_bijection_csv(self.csv_path)]
+    def list_images(S, target_directory):
+        selected_files = []
+        for _r, _d, _f in os.walk(target_directory):
+            for f in _f:
+                selected_files.append(os.path.join(_r, f))
+        return selected_files
 
-    def update_progress(self):
-        if not self.ui_ref is None:
+    def produce_background_image(S):
+        if S.background_images:
+            return random.choice(S.background_images)
+
+    def prepare_data(S):
+        crop_data(S.csv_path)
+        return [SemanticUnit(bijection) for bijection in extract_bijection_csv(S.csv_path)]
+
+    def update_progress(S):
+        if not S.ui_ref is None:
             target_min_score = 102
-            all_units = len(self.batch)
-            units_before_score  = len([_ for _ in self.batch if _.learning_score >= target_min_score])
+            all_units = len(S.batch)
+            units_before_score = len(
+                [_ for _ in S.batch if _.learning_score >= target_min_score])
 
             if units_before_score + 3 >= all_units:
-                self.ui_ref.progress_ratio = 0.0
-                self.ui_ref.mastered = 0
-                self.ui_ref.all_units = all_units
-                self.resample()
+                S.ui_ref.progress_ratio = 0.0
+                S.ui_ref.mastered = 0
+                S.ui_ref.all_units = all_units
+                S.resample()
 
             ratio = units_before_score / all_units
 
-            self.ui_ref.progress_ratio = ratio
-            self.ui_ref.mastered = units_before_score
-            self.ui_ref.to_master = all_units
+            S.ui_ref.progress_ratio = ratio
+            S.ui_ref.mastered = units_before_score
+            S.ui_ref.to_master = all_units
 
-    def resample(self):
-        self.semantic_units.sort(key = lambda _ : _.learning_score)
-        #self.batch = random.sample(self.semantic_units[:len(self.semantic_units)//2], 15)
-        self.batch = self.semantic_units[:len(self.semantic_units)//2]
+    def resample(S):
+        S.semantic_units.sort(key=lambda _: _.learning_score)
+        # S.batch = random.sample(S.semantic_units[:len(S.semantic_units)//2], 15)
+        S.batch = S.semantic_units[:len(S.semantic_units)//2]
 
-    def is_finished(self):
-        if len([_ for _ in self.semantic_units if _.learning_score >= 102]) >= len(self.semantic_units) -4:
+    def is_finished(S):
+        if len([_ for _ in S.semantic_units if _.learning_score >= 102])\
+                >= len(S.semantic_units) - 4:
             return True
         return False
 
-
-    def produce_three_pairs(self):
-        self.update_progress()
-        #selected = random.sample(self.semantic_units, THREE_PAIRS)
-        average = sum(_.learning_score for _ in self.batch)/len(self.batch)
-        worst_perfomance = list(filter(lambda _ : _.learning_score < average, self.batch))
-        best_perfomance = list(filter(lambda _ : _.learning_score >= average, self.batch))
+    def produce_three_pairs(S):
+        S.update_progress()
+        # selected = random.sample(S.semantic_units, THREE_PAIRS)
+        average = sum(_.learning_score for _ in S.batch)/len(S.batch)
+        worst_perfomance = list(
+            filter(lambda _: _.learning_score < average, S.batch))
+        best_perfomance = list(
+            filter(lambda _: _.learning_score >= average, S.batch))
 
         worst_picks = 0
         best_picks = 0
 
-        if len(worst_perfomance) < 4:
+        if len(worst_perfomance) < (N_ROWS//2)+1:
             worst_picks = len(worst_perfomance)
-            best_picks = 3 - worst_picks
+            best_picks = N_ROWS//2 - worst_picks
         else:
-            worst_picks = 3
+            worst_picks = N_ROWS//2
             best_picks = 0
 
         selected = []
@@ -100,107 +120,90 @@ class SixtletsProducer():
         return three_pairs
 
 ######################################
-### LINES HANDLER TEXT_AND_POSE
+# LINES HANDLER TEXT_AND_POSE
 ######################################
 
 
 class SemanticsLine():
-    def __init__(self, semantic_units, pygame_instance, W, H, init_y):
-        self.W, self.H = W, H
-        self.position_y = init_y
+    def __init__(S, semantic_units, pygame_instance, W, H, init_y):
+        S.W, S.H = W, H
+        S.position_y = init_y
 
-        self.x_positions = [self.W//6*(i+1) - self.W//12 for i in range(6)]
+        S.x_positions = [S.W//N_ROWS *
+                         (i+1) - S.W//(N_ROWS*2) for i in range(N_ROWS)]
 
-        self.semantic_units = semantic_units
-        self.pygame_instance = pygame_instance
+        S.semantic_units = semantic_units
+        S.pygame_instance = pygame_instance
 
-        self.active = False
-        self.correct = False
-        self.error = False
-        self.triggered = False
+        S.active = False
+        S.correct = False
+        S.error = False
+        S.triggered = False
 
-        self.base_color = random.choice([hex_to_rgb("#006663"),
-                                    hex_to_rgb("#18818C"), hex_to_rgb("#343D59"),
-                                    hex_to_rgb("#020659"), hex_to_rgb("#204127"),
-                                    hex_to_rgb("#3B42BF"), hex_to_rgb("#092140"),
-                                     hex_to_rgb("#89199E")])
-        self.rrise = False
-        self.grise = True
-        self.brise = True
+        S.base_color = random.choice([hex_to_rgb("#006663"),
+                                      hex_to_rgb("#18818C"), hex_to_rgb(
+            "#343D59"),
+            hex_to_rgb("#020659"), hex_to_rgb(
+            "#204127"),
+            hex_to_rgb("#3B42BF"), hex_to_rgb(
+            "#092140"),
+            hex_to_rgb("#89199E")])
+        S.rrise = False
+        S.grise = True
+        S.brise = True
 
-        self.keys_assotiated = [False for i in range(6)]
+        S.keys_assotiated = [False for i in range(N_ROWS)]
 
-        self.feedback = None
+        S.feedback = None
 
-    def move_vertically(self, delta_y):
-        self.position_y += delta_y
-        # if self.rrise:
-        #     self.base_color[0]+= 1
-        # else:
-        #     self.base_color[0]-=3
-        # if self.base_color[0]> 250:
-        #     self.rrise = False
-        # if self.base_color[0] < 10:
-        #     self.rrise = True
-        #
-        # if self.brise:
-        #     self.base_color[1]+= 2
-        # else:
-        #     self.base_color[1]-=2
-        # if self.base_color[1] > 250:
-        #     self.brise = False
-        # if self.base_color[1] < 10:
-        #     self.brise = True
-        #
-        # if self.grise:
-        #     self.base_color[2]+= 3
-        # else:
-        #     self.base_color[2]-=1
-        # if self.base_color[2]>250:
-        #     self.grise = False
-        # if self.base_color[2] < 10:
-        #     self.grise = True
-        #
-        # self.base_color = [int(_)%255 for _ in self.base_color]
+    def move_vertically(S, delta_y):
 
-    def produce_geometries(self):
+        if S.position_y <= S.H//3:
+            delta_y *= 0.75
+        else:
+            delta_y *= 1.5
+        S.position_y += delta_y
+
+    def produce_geometries(S):
         graphical_objects = []
-        if not self.triggered:
-            for unit, position_x in zip(self.semantic_units, self.x_positions):
+        if not S.triggered:
+            for unit, position_x in zip(S.semantic_units, S.x_positions):
                 if unit.active:
                     color = hex_to_rgb("#A60321")
                 else:
-                    color = self.base_color 
+                    color = S.base_color
                 graphical_objects.append(WordGraphical(unit.content,
                                                        position_x,
-                                                       self.position_y,
+                                                       S.position_y,
                                                        color))
         else:
             active_unit = None
-            for unit in self.semantic_units:
+            for unit in S.semantic_units:
                 if unit.active:
                     active_unit = unit
             color = hex_to_rgb("#022873")
-            for unit, position_x in zip(self.semantic_units, self.x_positions):
+            for unit, position_x in zip(S.semantic_units, S.x_positions):
                 if unit.key == active_unit.key:
                     graphical_objects.append(WordGraphical(unit.content,
                                                            position_x,
-                                                           self.position_y,
+                                                           S.position_y,
                                                            color))
         return graphical_objects
 
-    def activate(self):
-        self.active = True
+    def activate(S):
+        S.active = True
 
-    def deactivate(self):
-        self.register_error()
+    def deactivate(S):
+        S.register_error()
 
-    def register_keys(self, key_codes):
-        self.keys_assotiated = [a or b for (a,b) in zip(key_codes, self.keys_assotiated)]
-        self.validate_keys()
+    def register_keys(S, key_codes):
+        S.keys_assotiated = [a or b for (a, b) in zip(
+            key_codes, S.keys_assotiated)]
+        S.validate_keys()
 
-    def check_answers(self):
-        selected_units = list(compress(self.semantic_units, self.keys_assotiated))
+    def check_answers(S):
+        selected_units = list(
+            compress(S.semantic_units, S.keys_assotiated))
         if len(selected_units) != 2:
             return False
         first_unit, second_unit = selected_units
@@ -210,111 +213,120 @@ class SemanticsLine():
             return False
         return True
 
-    def register_event(self):
-        self.triggered = True
-        self.active = False
+    def register_event(S):
+        S.triggered = True
+        S.active = False
 
-    def feedback_positive(self):
-        for unit in self.semantic_units:
+    def feedback_positive(S):
+        for unit in S.semantic_units:
             if unit.active:
                 unit.register_match()
                 break
-        self.feedback = 1
+        S.feedback = 1
 
-    def feedback_negative(self):
-        for unit in self.semantic_units:
+    def feedback_negative(S):
+        for unit in S.semantic_units:
             if unit.active:
                 unit.register_error()
-        self.feedback = -1
+        S.feedback = -1
 
-    def register_error(self):
-        self.correct = False
-        self.error = True
-        self.register_event()
-        self.feedback_negative()
+    def register_error(S):
+        S.correct = False
+        S.error = True
+        S.register_event()
+        S.feedback_negative()
 
-    def register_correct(self):
-        self.correct = True
-        self.error = False
-        self.register_event()
-        self.feedback_positive()
+    def register_correct(S):
+        S.correct = True
+        S.error = False
+        S.register_event()
+        S.feedback_positive()
 
-    def validate_keys(self):
+    def validate_keys(S):
 
-        if self.keys_assotiated.count(True) == 2:
-            if(self.check_answers()):
-                self.register_correct()
+        if S.keys_assotiated.count(True) == 2:
+            if (S.check_answers()):
+                S.register_correct()
             else:
-                self.register_error()
+                S.register_error()
 
-        elif self.keys_assotiated.count(True) >= 3:
-            self.register_error()
+        elif S.keys_assotiated.count(True) >= 3:
+            S.register_error()
 
-    def fetch_feedback(self):
-        to_return = self.feedback
-        self.feedback = None
+    def fetch_feedback(S):
+        to_return = S.feedback
+        S.feedback = None
         return to_return
 
 
 ######################################
-### LINES HANDLER GRAPHICS
+# LINES HANDLER GRAPHICS
 ######################################
 
 class WordGraphical():
-    def __init__(self, text, x, y, color):
-        self.text = text
-        self.x = x
-        self.y = y
-        self.color = color
+    def __init__(S, text, x, y, color):
+        S.text = text
+        S.x = x
+        S.y = y
+        S.color = color
+
 
 class SixtletDrawer():
-    def __init__(self, pygame_instance, display_instance, W, H):
-        self.pygame_instance = pygame_instance
-        self.display_instance = display_instance
-        self.W = W
-        self.H = H
-        notto_font_location = os.path.join(ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
-        self.nottofont60 = self.pygame_instance.font.Font(notto_font_location, 75, bold=True)
-        self.nottofont30 = self.pygame_instance.font.Font(notto_font_location, 55, bold=True)
-        self.nottofont40 = self.pygame_instance.font.Font(notto_font_location, 35, bold=True)
-        self.nottofont20 = self.pygame_instance.font.Font(notto_font_location, 25, bold=True)
+    def __init__(S, pygame_instance, display_instance, W, H):
+        S.pygame_instance = pygame_instance
+        S.display_instance = display_instance
+        S.W = W
+        S.H = H
+        notto_font_location = os.path.join(
+            ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
+        S.nottofont60 = S.pygame_instance.font.Font(
+            notto_font_location, 75, bold=True)
+        S.nottofont30 = S.pygame_instance.font.Font(
+            notto_font_location, 55, bold=True)
+        S.nottofont40 = S.pygame_instance.font.Font(
+            notto_font_location, 35, bold=True)
+        S.nottofont20 = S.pygame_instance.font.Font(
+            notto_font_location, 25, bold=True)
 
         simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "simhei.ttf")
-        self.simhei60 = self.pygame_instance.font.Font(simhei_font_location, 85, bold=True)
-        self.simhei30 = self.pygame_instance.font.Font(simhei_font_location, 65, bold=True)
-        self.simhei40 = self.pygame_instance.font.Font(simhei_font_location, 45, bold=True)
-        self.simhei20 = self.pygame_instance.font.Font(simhei_font_location, 35, bold=True)
+        S.simhei60 = S.pygame_instance.font.Font(
+            simhei_font_location, 85, bold=True)
+        S.simhei30 = S.pygame_instance.font.Font(
+            simhei_font_location, 65, bold=True)
+        S.simhei40 = S.pygame_instance.font.Font(
+            simhei_font_location, 45, bold=True)
+        S.simhei20 = S.pygame_instance.font.Font(
+            simhei_font_location, 35, bold=True)
 
-    def draw_static_ui_elements(self, horisontals):
-        for i in range(1,8):
-            self.pygame_instance.draw.line(self.display_instance,
-                                  (10,10,10),
-                                  (self.W//6*i,0),
-                                  (self.W//6*i,self.H),
-                                           width = 3)
+    def draw_static_ui_elements(S, horisontals):
+        for i in range(1, 8):
+            S.pygame_instance.draw.line(S.display_instance,
+                                        (10, 10, 10),
+                                        (S.W//N_ROWS*i, 0),
+                                        (S.W//N_ROWS*i, S.H),
+                                        width=3)
 
-        self.pygame_instance.draw.line(self.display_instance,
-                                  (20,20,20),
-                                  (self.W//6*3-5,0),
-                                  (self.W//6*3-5,self.H),
-                                       width=2)
-        self.pygame_instance.draw.line(self.display_instance,
-                                  (20,20,20),
-                                  (self.W//6*3+5,0),
-                                  (self.W//6*3+5,self.H),
-                                       width=2)
+        S.pygame_instance.draw.line(S.display_instance,
+                                    (20, 20, 20),
+                                    (S.W//N_ROWS*(N_ROWS//2)-5, 0),
+                                    (S.W//N_ROWS*(N_ROWS//2)-5, S.H),
+                                    width=2)
+        S.pygame_instance.draw.line(S.display_instance,
+                                    (20, 20, 20),
+                                    (S.W//N_ROWS*(N_ROWS//2)+5, 0),
+                                    (S.W//N_ROWS*(N_ROWS//2)+5, S.H),
+                                    width=2)
         for line_y in horisontals:
-            self.pygame_instance.draw.line(self.display_instance,
-                                  (10,10,10),
-                                  (0,line_y),
-                                  (self.W,line_y),
-                                           width=3)
+            S.pygame_instance.draw.line(S.display_instance,
+                                        (10, 10, 10),
+                                        (0, line_y),
+                                        (S.W, line_y),
+                                        width=3)
 
-
-    def draw_line(self, line):
+    def draw_line(S, line):
         geometries = line.produce_geometries()
         color = hex_to_rgb("#404040")
-        if line.active and  line.triggered:
+        if line.active and line.triggered:
             color = hex_to_rgb("#F2790F")
         elif line.correct:
             color = hex_to_rgb("#61A61C")
@@ -324,9 +336,11 @@ class SixtletDrawer():
         for geometry in geometries:
             message = geometry.text
             if re.findall(r'[\u4e00-\u9fff]+', message):
-                renderer = self.simhei60 if len(message) == 1 else self.simhei30 if len(message) < 5 else self.simhei40 if len(message) < 8 else self.simhei20
+                renderer = S.simhei60 if len(message) == 1 else S.simhei30 if len(
+                    message) < 5 else S.simhei40 if len(message) < 8 else S.simhei20
             else:
-                renderer = self.nottofont60 if len(message) == 1 else self.nottofont30 if len(message) < 5 else self.nottofont40 if len(message) < 8 else self.nottofont20
+                renderer = S.nottofont60 if len(message) == 1 else S.nottofont30 if len(
+                    message) < 5 else S.nottofont40 if len(message) < 8 else S.nottofont20
 
             if not re.findall(r'[\u4e00-\u9fff]+', message):
                 message = morfer.morf_text(message)
@@ -335,169 +349,217 @@ class SixtletDrawer():
                 text = renderer.render(message, True, geometry.color, color)
             else:
                 text = renderer.render(message, True, geometry.color)
-            textRect = text.get_rect()
-            textRect.center = (geometry.x, geometry.y)
+            txt_rect = text.get_rect()
+            txt_rect.center = (geometry.x, geometry.y)
 
-            self.display_instance.blit(text, textRect)
+            S.display_instance.blit(text, txt_rect)
 
-    def display_keys(self, keys):
+    def display_keys(S, keys):
         for i, key_state in enumerate(keys):
-            color = (255,255,255)
+            color = (255, 255, 255)
             if key_state == "up":
-                if i in [0,2,3,5]:
-                    color = (200,170,200) if LAST_EVENT == "POSITIVE" else (200,170,170)
+                if not i in [0, 2,  5, 7]:
+                    color = (200, 170, 200) if LAST_EVENT == "POSITIVE" else (
+                        200, 170, 170)
                 else:
-                    color = (170,200,200) if LAST_EVENT == "POSITIVE" else (170, 150, 150)
+                    color = (170, 200, 200) if LAST_EVENT == "POSITIVE" else (
+                        170, 150, 150)
             elif key_state == "down":
-                if i in [0,2,3,5]:
-                    color = (150, 0, 150) if LAST_EVENT == "POSITIVE" else (150, 0, 100)
+                if not i in [0, 2,  5, 7]:
+                    color = (150, 0, 150) if LAST_EVENT == "POSITIVE" else (
+                        150, 0, 100)
                 else:
-                    color = (0, 150, 150) if LAST_EVENT == "POSITIVE" else (50, 100, 100)
+                    color = (0, 150, 150) if LAST_EVENT == "POSITIVE" else (
+                        50, 100, 100)
             else:
-                color = (0,150,100)
+                color = (0, 150, 100)
 
-            self.pygame_instance.draw.rect(self.display_instance,
-                                  color,
-                                  (self.W//6*i,0,self.W//6*(i+1),self.H))
+            S.pygame_instance.draw.rect(S.display_instance,
+                                        color,
+                                        (S.W//N_ROWS*i, 0,
+                                         S.W//N_ROWS*(i+1), S.H))
 
 
 ######################################
-### SIX MODE CONTROLLER
+# SIX MODE CONTROLLER
 ######################################
 
 class KeyboardSixModel():
-    def __init__(self, pygame_instance):
-        self.pygame_instance = pygame_instance
-        self.up = 'up'
-        self.down = 'down'
-        self.pressed = 'pressed'
-        self.mapping = OrderedDict()
-        self.mapping[self.pygame_instance.K_s] = self.up
-        self.mapping[self.pygame_instance.K_d] = self.up
-        self.mapping[self.pygame_instance.K_f] = self.up
-        self.mapping[self.pygame_instance.K_j] = self.up
-        self.mapping[self.pygame_instance.K_k] = self.up
-        self.mapping[self.pygame_instance.K_l] = self.up
+    def __init__(S, pygame_instance):
+        S.pygame_instance = pygame_instance
+        S.up = 'up'
+        S.down = 'down'
+        S.pressed = 'pressed'
+        S.mapping = OrderedDict()
+        S.mapping[S.pygame_instance.K_a] = S.up
+        S.mapping[S.pygame_instance.K_s] = S.up
+        S.mapping[S.pygame_instance.K_d] = S.up
+        S.mapping[S.pygame_instance.K_f] = S.up
 
-        self.keys = [self.up for _ in range(6)]
+        S.mapping[S.pygame_instance.K_j] = S.up
+        S.mapping[S.pygame_instance.K_k] = S.up
+        S.mapping[S.pygame_instance.K_l] = S.up
+        S.mapping[S.pygame_instance.K_SEMICOLON] = S.up
 
-    def process_button(self, current_state, new_state):
-        if current_state == self.up and new_state == self.down:
-            return self.down
-        elif current_state == self.down and new_state == self.down:
-            return self.down
-        elif current_state == self.down and new_state == self.up:
-            return self.pressed
-        elif current_state == self.pressed and new_state == self.up:
-            return self.up
-        else:
-            return self.up
+        S.keys = [S.up for _ in range(N_ROWS)]
 
-    def prepare_inputs(self):
-        self.keys = list(self.mapping.values())
+    def process_button(S, current_state, new_state):
+        if current_state == S.up and new_state == S.down:
+            return S.down
+        if current_state == S.down and new_state == S.down:
+            return S.down
+        if current_state == S.down and new_state == S.up:
+            return S.pressed
+        if current_state == S.pressed and new_state == S.up:
+            return S.up
+        return S.up
 
-    def get_inputs(self):
-        keys = self.pygame_instance.key.get_pressed()
-        for control_key in self.mapping:
+    def prepare_inputs(S):
+        S.keys = list(S.mapping.values())
+
+    def get_inputs(S):
+        keys = S.pygame_instance.key.get_pressed()
+        for control_key in S.mapping:
             if keys[control_key]:
-                self.mapping[control_key] = self.process_button(self.mapping[control_key], self.down)
+                S.mapping[control_key] = S.process_button(
+                    S.mapping[control_key], S.down)
             else:
-                self.mapping[control_key] = self.process_button(self.mapping[control_key], self.up)
+                S.mapping[control_key] = S.process_button(
+                    S.mapping[control_key], S.up)
 
-    def get_keys(self):
-        self.get_inputs()
-        self.prepare_inputs()
-        return self.keys
+    def get_keys(S):
+        S.get_inputs()
+        S.prepare_inputs()
+        return S.keys
 
 
 class SixtletsProcessor():
-    def __init__(self, W, H, pygame_instance, display_instance, ui_ref, data_label, data_path):
-        self.W = W
-        self.H = H
-        self.cast_point = 0 - self.H//8
-        self.despawn_point = self.H + self.H//8
-        self.exit_trigger = self.H - self.H//4 - self.H//8 - self.H//16 + self.H//8
-        self.entry_trigger  = self.H - self.H//4 - self.H//4 + self.H//8
-        self.action_trigger = (self.entry_trigger + self.exit_trigger)//2
-        self.producer = SixtletsProducer(data_label, data_path, ui_ref)
-        self.drawer = SixtletDrawer(pygame_instance, display_instance, W, H)
-        self.control = KeyboardSixModel(pygame_instance)
-        self.stack = []
-        self.active_line = None
-        self.pygame_instance = pygame_instance
-        self.display_instance = display_instance
+    def __init__(S, W, H, pygame_instance, display_instance, ui_ref, data_label, data_path):
+        S.W = W
+        S.H = H
+        S.cast_point = 0 - S.H//8
+        S.despawn_point = S.H + S.H//8
+        S.exit_trigger = S.H - S.H//4 - S.H//8 - S.H//16 + S.H//8
+        S.entry_trigger = S.H - S.H//4 - S.H//4 + S.H//8
+        S.action_trigger = (S.entry_trigger + S.exit_trigger)//2
+        S.producer = SixtletsProducer(data_label, data_path, ui_ref)
+        S.drawer = SixtletDrawer(pygame_instance, display_instance, W, H)
+        S.control = KeyboardSixModel(pygame_instance)
+        S.stack = []
+        S.active_line = None
+        S.pygame_instance = pygame_instance
+        S.display_instance = display_instance
 
-    def add_line(self):
-        line_units = self.producer.produce_three_pairs()
-        self.stack.append(SemanticsLine(line_units,
-                                        self.pygame_instance,
-                                        self.W,
-                                        self.H,
-                                        self.cast_point))
-        return self.producer.is_finished()
+        S.trans_surface = S.pygame_instance.Surface((W, H))
+        S.trans_surface.set_alpha(100)
+        S.trans_surface.fill((30, 0, 30))
+        S.image = None
+        S.image_y = -H
 
-    def update_positions(self, delta_y):
-        for line in self.stack:
+        active_image_path = S.producer.produce_background_image()
+        if active_image_path:
+            image_converted = S.pygame_instance.image.load(
+                active_image_path).convert()
+            image_converted = S.pygame_instance.transform.flip(
+                image_converted,
+                random.choice([True, False]),
+                random.choice([True, False]))
+            S.image = S.pygame_instance.transform.scale(
+                image_converted, (W, H*2))
+
+    def add_line(S):
+        line_units = S.producer.produce_three_pairs()
+        S.stack.append(SemanticsLine(line_units,
+                                     S.pygame_instance,
+                                     S.W,
+                                     S.H,
+                                     S.cast_point))
+        return S.producer.is_finished()
+
+    def update_positions(S, delta_y):
+        for line in S.stack:
             line.move_vertically(delta_y)
 
-    def select_active_line(self, key_states):
+    def select_active_line(S, key_states):
 
-        if not "down" in key_states and len(self.stack):
-            halfway = list(filter(lambda _ : _.position_y > self.entry_trigger, self.stack))
-            active = min(list(filter(lambda _ : not _.triggered,
-                                halfway)),
-                         key = lambda _ : sqrt((self.action_trigger - _.position_y)**2),
-                         default = None)
+        if "down" not in key_states and S.stack:
+            halfway = list(filter(lambda _: _.position_y >
+                           S.entry_trigger, S.stack))
+            active = min(list(filter(lambda _: not _.triggered,
+                                     halfway)),
+                         key=lambda _: sqrt(
+                             (S.action_trigger - _.position_y)**2),
+                         default=None)
 
-            if not active is None:
+            if active is not None:
                 active.activate()
-                self.active_line = active
+                S.active_line = active
 
-        for passed in filter(lambda _ : _.position_y > self.exit_trigger and not _.triggered,
-                             self.stack):
+        for passed in filter(lambda _: _.position_y > S.exit_trigger and not _.triggered,
+                             S.stack):
             passed.deactivate()
-            if self.active_line == passed:
-                self.active_line = None
+            if S.active_line == passed:
+                S.active_line = None
 
-    def redraw(self):
-        for line in self.stack:
-            self.drawer.draw_line(line)
-        self.drawer.draw_static_ui_elements([self.entry_trigger,
-                                             self.exit_trigger,
-                                             self.action_trigger])
+    def redraw(S):
+        for line in S.stack:
+            S.drawer.draw_line(line)
+        S.drawer.draw_static_ui_elements([S.entry_trigger,
+                                          S.exit_trigger,
+                                          S.action_trigger])
 
-    def clean(self):
-        self.stack = list(filter(lambda _ : _.position_y < self.despawn_point,
-                                 self.stack))
+    def clean(S):
+        S.stack = list(filter(lambda _: _.position_y < S.despawn_point,
+                              S.stack))
 
-    def get_pressed(self, key_states):
-        mark_pressed = lambda _ : True if _ == "pressed" else False
+    def get_pressed(S, key_states):
+        def mark_pressed(_): return True if _ == "pressed" else False
         return [mark_pressed(_) for _ in key_states]
 
-    def get_feedback(self):
-        feedback = sum(_.fetch_feedback() for _ in self.stack if not _.feedback is None)
+    def get_feedback(S):
+        feedback = sum(_.fetch_feedback()
+                       for _ in S.stack if _.feedback is not None)
         global LAST_EVENT
         if feedback > 0:
             LAST_EVENT = "POSITIVE"
-        elif feedback <0:
+        elif feedback < 0:
             LAST_EVENT = "NEGATIVE"
         return feedback
 
-    def process_inputs(self):
-        key_states = self.control.get_keys()
-        self.drawer.display_keys(key_states)
-        self.select_active_line(key_states)
+    def process_inputs(S):
+        key_states = S.control.get_keys()
+        S.drawer.display_keys(key_states)
+        S.select_active_line(key_states)
 
-        pressed_keys = self.get_pressed(key_states)
+        pressed_keys = S.get_pressed(key_states)
 
-        if not self.active_line is None and any(pressed_keys):
-            self.active_line.register_keys(pressed_keys)
+        if S.active_line is not None and any(pressed_keys):
+            S.active_line.register_keys(pressed_keys)
 
-    def tick(self, delta_y):
-        self.update_positions(delta_y)
-        self.clean()
-        self.process_inputs()
-        self.redraw()
+    def tick(S, delta_y):
+        S.update_positions(delta_y)
+        S.clean()
+        S.process_inputs()
+        S.redraw()
 
-        feedback = self.get_feedback()
+        if S.image:
+            S.trans_surface.blit(S.image, (0, S.image_y))
+            S.display_instance.blit(S.trans_surface, (0, 0))
+            S.image_y += delta_y/3
+
+            if S.image_y >= 0:
+                active_image_path = S.producer.produce_background_image()
+                if active_image_path:
+                    image_converted = S.pygame_instance.image.load(
+                        active_image_path).convert()
+                    image_converted = S.pygame_instance.transform.flip(
+                        image_converted,
+                        random.choice([True, False]),
+                        random.choice([True, False]))
+
+                    S.image = S.pygame_instance.transform.scale(
+                        image_converted, (S.W, S.H*2))
+                S.image_y = -1*S.H
+
+        feedback = S.get_feedback()
         return feedback

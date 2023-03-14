@@ -18,6 +18,7 @@ class Counter():
     def get_percent(self):
         return self.time_elapsed/self.drop_time
 
+
 def global_timer(pygame_instance):
     last_frame_timestamp = 0
     current_frame_timestamp = pygame_instance.time.get_ticks()
@@ -28,6 +29,7 @@ def global_timer(pygame_instance):
         last_frame_timestamp = current_frame_timestamp
         yield frame_timedelta
 
+
 class Progression():
     def __init__(self,
                  value_constraint,
@@ -37,8 +39,8 @@ class Progression():
                  ui_ref):
 
         self.correct = 18
-        self.missed  = 2
-        self.offset  = 30 
+        self.missed = 2
+        self.offset = 30
         self.new_event = False
         self.correct_event = False
         self.combo = 0
@@ -72,7 +74,7 @@ class Progression():
         if self.missed <= 20:
             self.missed += 1
         else:
-            if self.correct >0:
+            if self.correct > 0:
                 self.correct -= 1
         self.new_event = True
         self.correct_event = False
@@ -84,7 +86,6 @@ class Progression():
             self.register_correct()
         elif value < 0:
             self.register_miss()
-
 
         if self.get_percent() == 0:
             return False
@@ -110,26 +111,26 @@ class Progression():
             self.new_event = False
 
             if self.is_more_intense_required() and self.correct_event:
-                self.time_to_see -= 1000 
-                self.time_to_update -= 250 
+                self.time_to_see -= 1000
+                self.time_to_update -= 250
 
-                if self.time_to_see < 6000:
-                    self.time_to_see = 6000
+                if self.time_to_see < 7500:
+                    self.time_to_see = 7500
 
-                if self.time_to_update < 2500:
-                    self.time_to_update = 2500
+                if self.time_to_update < 3500:
+                    self.time_to_update = 3500
 
             elif self.is_less_intense_required() and not self.correct_event:
                 self.time_to_see += 1000
                 self.time_to_update += 250
-                
+
                 if self.time_to_see > 10000:
                     self.time_to_see = 10000
 
                 if self.time_to_update > 5000:
                     self.time_to_update = 5000
 
-            self.speed = self.value_constraint / self.time_to_see    
+            self.speed = self.value_constraint / self.time_to_see
             self.ui_ref.speed_index = self.time_to_see
             self.update_counter.update_drop(self.time_to_update)
         return self.speed
