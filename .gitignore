@@ -2,7 +2,9 @@
 __pycache__/
 *.py[cod]
 *$py.class
+
 data_to_burn.csv
+*.csv
 $XDG_STATE_HOME
 
 
