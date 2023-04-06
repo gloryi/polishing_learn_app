@@ -11,6 +11,12 @@ def extract_bijection_csv(path_to_file):
             # if not any(len(_) > 8 for _ in line):
             yield line[:2]
 
+def extract_full_csv(path_to_file):
+    with open(path_to_file, encoding="UTF-8") as datafile:
+        reader = csv.reader(datafile)
+        for line in reader:
+            yield line
+
 
 def crop_data(path_to_file):
     '''rewrite data file to left N last lines only'''

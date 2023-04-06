@@ -3,6 +3,7 @@ __pycache__/
 *.py[cod]
 *$py.class
 data_to_burn.csv
+$XDG_STATE_HOME
 
 
 # C extensions

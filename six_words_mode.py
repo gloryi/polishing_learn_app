@@ -1,14 +1,15 @@
 from collections import OrderedDict
-from itertools import compress
+from itertools import compress, islice
 from math import sqrt
 import os
 import random
 import re
 
-from utils import extract_bijection_csv, crop_data
+from utils import extract_bijection_csv, crop_data, extract_full_csv
 from learning_model import SemanticUnit
 from config import ABSOLUTE_LOCATION
 from config import BACKGROUNDS_DIR
+from config import MINOR_IMAGES_H
 from text_morfer import textMorfer
 
 LAST_EVENT = "POSITIVE"
@@ -29,7 +30,8 @@ class SixtletsProducer():
     def __init__(S, label, csv_path, ui_ref=None):
         S.csv_path = csv_path
         S.label = label
-        S.semantic_units = S.prepare_data()
+        S.semantic_units = S.prepare_basic_data()
+        S.extend_data(S.semantic_units)
         S.batch = random.sample(S.semantic_units, 20)
         S.background_images = S.list_images(BACKGROUNDS_DIR)
 
@@ -46,9 +48,25 @@ class SixtletsProducer():
         if S.background_images:
             return random.choice(S.background_images)
 
-    def prepare_data(S):
+    def prepare_basic_data(S):
         crop_data(S.csv_path)
         return [SemanticUnit(bijection) for bijection in extract_bijection_csv(S.csv_path)]
+
+    def extend_data(S, units):
+        for i, data_extended in enumerate(extract_full_csv(S.csv_path)):
+
+            if i >= len(units):
+                break
+            unit = units[i]
+            images = list(filter(lambda _: os.path.isfile(_), data_extended))
+
+            if images:
+                unit.set_images(images)
+
+            add_meanings = list(filter(lambda _: not os.path.isfile(_), data_extended))
+            if len(add_meanings) > 2:
+                add_meanings = add_meanings[2:]
+                unit.set_add_meanings(add_meanings)
 
     def update_progress(S):
         if not S.ui_ref is None:
@@ -167,15 +185,26 @@ class SemanticsLine():
     def produce_geometries(S):
         graphical_objects = []
         if not S.triggered:
-            for unit, position_x in zip(S.semantic_units, S.x_positions):
+            for i, (unit, position_x) in enumerate(zip(S.semantic_units, S.x_positions)):
+                y_shift = 0
+                if not i in [0, 2,  5, 7]:
+                    y_shift = 10
+                else:
+                    y_shift = -10
+
                 if unit.active:
                     color = hex_to_rgb("#A60321")
                 else:
                     color = S.base_color
                 graphical_objects.append(WordGraphical(unit.content,
                                                        position_x,
-                                                       S.position_y,
+                                                       S.position_y+y_shift,
                                                        color))
+                if unit.add_meaning:
+                    graphical_objects.append(WordGraphical(unit.add_meaning,
+                                                           position_x,
+                                                           S.position_y+y_shift+45,
+                                                           color, shrink = True))
         else:
             active_unit = None
             for unit in S.semantic_units:
@@ -189,6 +218,21 @@ class SemanticsLine():
                                                            S.position_y,
                                                            color))
         return graphical_objects
+
+    def produce_images(S):
+        images = []
+        for i, (unit, position_x) in enumerate(zip(S.semantic_units, S.x_positions)):
+            y_shift = 0
+            if not i in [0, 2,  5, 7]:
+                y_shift = 10
+            else:
+                y_shift = -10
+
+            if unit.active and unit.image:
+                images.append([unit.image, position_x, S.position_y+y_shift-MINOR_IMAGES_H])
+        return images
+
+
 
     def activate(S):
         S.active = True
@@ -264,11 +308,12 @@ class SemanticsLine():
 ######################################
 
 class WordGraphical():
-    def __init__(S, text, x, y, color):
+    def __init__(S, text, x, y, color, shrink = False):
         S.text = text
         S.x = x
         S.y = y
         S.color = color
+        S.shrink = shrink
 
 
 class SixtletDrawer():
@@ -280,23 +325,55 @@ class SixtletDrawer():
         notto_font_location = os.path.join(
             ABSOLUTE_LOCATION, "NotoSans-SemiBold.ttf")
         S.nottofont60 = S.pygame_instance.font.Font(
-            notto_font_location, 75, bold=True)
+            notto_font_location, 75)
         S.nottofont30 = S.pygame_instance.font.Font(
-            notto_font_location, 55, bold=True)
+            notto_font_location, 55)
         S.nottofont40 = S.pygame_instance.font.Font(
-            notto_font_location, 35, bold=True)
+            notto_font_location, 35)
         S.nottofont20 = S.pygame_instance.font.Font(
-            notto_font_location, 25, bold=True)
+            notto_font_location, 25)
 
         simhei_font_location = os.path.join(ABSOLUTE_LOCATION, "simhei.ttf")
         S.simhei60 = S.pygame_instance.font.Font(
-            simhei_font_location, 85, bold=True)
+            simhei_font_location, 85)
         S.simhei30 = S.pygame_instance.font.Font(
-            simhei_font_location, 65, bold=True)
+            simhei_font_location, 65)
         S.simhei40 = S.pygame_instance.font.Font(
-            simhei_font_location, 45, bold=True)
+            simhei_font_location, 45)
         S.simhei20 = S.pygame_instance.font.Font(
-            simhei_font_location, 35, bold=True)
+            simhei_font_location, 35)
+
+        S.images_cached = {}
+
+        S.fonts_a = 20
+        S.fonts_b = 220
+        S.fonts_step = 10
+        S.cyrillic_fonts = [
+            S.pygame_instance.font.Font(notto_font_location, i)
+            for i in range(S.fonts_a, S.fonts_b, S.fonts_step)
+        ]
+        S.utf_fonts = [
+            S.pygame_instance.font.Font(simhei_font_location, i)
+            for i in range(S.fonts_a, S.fonts_b, S.fonts_step)
+        ]
+
+    def pick_font(S, font_type="utf", size=40):
+        fonts_size_idx = (size - S.fonts_a) // S.fonts_step
+
+        if fonts_size_idx < 0:
+            fonts_size_idx = 0
+
+        if font_type == "utf":
+            if fonts_size_idx >= len(S.utf_fonts):
+                fonts_size_idx = len(S.utf_fonts) - 1
+
+            return S.utf_fonts[fonts_size_idx]
+
+        else:
+            if fonts_size_idx >= len(S.cyrillic_fonts):
+                fonts_size_idx = len(S.cyrillic_fonts) - 1
+
+            return S.cyrillic_fonts[fonts_size_idx]
 
     def draw_static_ui_elements(S, horisontals):
         for i in range(1, 8):
@@ -336,11 +413,17 @@ class SixtletDrawer():
         for geometry in geometries:
             message = geometry.text
             if re.findall(r'[\u4e00-\u9fff]+', message):
-                renderer = S.simhei60 if len(message) == 1 else S.simhei30 if len(
-                    message) < 5 else S.simhei40 if len(message) < 8 else S.simhei20
+                l_message = len(message)
+                if geometry.shrink:
+                    l_message += 5
+                #renderer = S.simhei60 if l_message == 1 else S.simhei30 if l_message < 5 else S.simhei40 if l_message < 8 else S.simhei20
+                renderer = S.pick_font("utf", (15-l_message)*5)
             else:
-                renderer = S.nottofont60 if len(message) == 1 else S.nottofont30 if len(
-                    message) < 5 else S.nottofont40 if len(message) < 8 else S.nottofont20
+                l_message = len(message)
+                if geometry.shrink:
+                    l_message += 5
+                #renderer = S.nottofont60 if l_message == 1 else S.nottofont30 if l_message < 5 else S.nottofont40 if l_message < 8 else S.nottofont20
+                renderer = S.pick_font("rus", (15-l_message)*5)
 
             if not re.findall(r'[\u4e00-\u9fff]+', message):
                 message = morfer.morf_text(message)
@@ -353,6 +436,33 @@ class SixtletDrawer():
             txt_rect.center = (geometry.x, geometry.y)
 
             S.display_instance.blit(text, txt_rect)
+
+        images = line.produce_images()
+        for image in images:
+            img_path, x, y = image
+            S.check_cached_image(img_path)
+            if img_path in S.images_cached and S.images_cached[img_path]:
+                image_scaled = S.images_cached[img_path]
+                _w, _h = int(S.W//N_ROWS)*0.75, MINOR_IMAGES_H
+                S.display_instance.blit(image_scaled, (int(x-_w//2), int(y-_h//2)) )
+
+    def check_cached_image(S, path_to_image):
+        if len(S.images_cached) > 100:
+            S.images_cached = dict(islice(S.images_cached.items(), 50))
+
+        if not path_to_image or not os.path.exists(path_to_image):
+            S.images_cached[path_to_image] = None
+            return
+
+        if path_to_image in S.images_cached:
+            return
+
+        image_converted = S.pygame_instance.image.load(path_to_image).convert()
+        _w, _h = int(S.W//N_ROWS)*0.75, MINOR_IMAGES_H
+        image_scaled = S.pygame_instance.transform.scale(image_converted, (_w, _h))
+
+        S.images_cached[path_to_image] = image_scaled
+
 
     def display_keys(S, keys):
         for i, key_state in enumerate(keys):
@@ -451,7 +561,7 @@ class SixtletsProcessor():
         S.display_instance = display_instance
 
         S.trans_surface = S.pygame_instance.Surface((W, H))
-        S.trans_surface.set_alpha(100)
+        S.trans_surface.set_alpha(70)
         S.trans_surface.fill((30, 0, 30))
         S.image = None
         S.image_y = -H

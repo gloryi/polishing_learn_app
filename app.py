@@ -95,8 +95,8 @@ for time_delta in delta_timer:
 
     resume_game = progression.register_event(feedback)
     if not resume_game or is_finished:
-        # os.chdir(NEXT_APP_DIR)
-        # subprocess.Popen(["python3", NEXT_APP])
+        os.chdir(NEXT_APP_DIR)
+        subprocess.Popen(["python3", NEXT_APP])
         break
 
     pixels_per_ms = progression.synchronize_speed()
