@@ -1,50 +1,50 @@
-11,:ls,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-10/Famous Nine arch bridge in Ella, Demodara, Sri Lanka.jpg"
-12,:tabm n(pos),"/home/gloryi/Pictures/Windows 10 Spotlight/2022-03/Cricket pitch in the Valley of Rocks near Lynton, Devon, England, UK.jpg"
-13,:%s/.*/\u&,"/home/gloryi/Pictures/Windows 10 Spotlight/2021-03/View of the lake from The Rock of Guatape El Peñol, Antioquia, Colombia.jpg"
-14,:set autoindent,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-10/Spooky moonrise over lake, super moon at night.jpg"
-15,mdf,/home/gloryi/Pictures/FlickrSets/images_6_byhand_to_delete/000244.jpg
-16,:g/myname/d,/home/gloryi/Pictures/FlickrSets/images4_to_delete/002804.jpg
-17,:bufdo /srcstr/,/home/gloryi/Pictures/FlickrSets/images1_to_delte/001928.jpg
-18,gggug,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-23-33/18 (1051).jpg
-19,ctrl-w|,/home/gloryi/Pictures/FlickrSets/images4_to_delete/002606.jpg
-20,del,/home/gloryi/Pictures/Windows 10 Spotlight/2019-12/An illuminated Christmas Tree next to a shopping mall in Singapore.jpg
-jianq,降绛,絳洚,降绛,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-19-54/52 (1245).jpg
-shyh,柿铈,鈰柿,铈鈰,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-05/Surface of frozen lake Baikal winter view, Russia.jpg"
-hann,悍捍,焊銲,悍捍,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-11/The Bandra-Worli Sea Link bridge, Mumbai, India.jpg"
-gou,够夠,狗苟,笱枸,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-53-14/56 (856).jpg
-ou,欧鸥,殴沤,讴瓯,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-09/View on the peak mountain, Maupiti island near Bora Bora, French Polynesia.jpg"
-feng,風瘋,楓風,瘋楓,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-07/Thufa hill with a fishing shed on top near Reykjavik harbor, Iceland.jpg"
-shieh,蟹懈,邂獬,廨蟹,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-45-06/53 (914).jpg
-piaw,飘飄,漂瞟,嫖瓢,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-09/Ursa Beach at the coast of Sintra, Portugal.jpg"
-tyng,停婷,葶停,婷葶,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-32-42/58 (986).jpg
-erl,而鸸,鴯而,鸸鴯,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-22-30/34 (821).jpg
-bih,秘毖,邲閟,铋鉍,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-32-19/40 (293).jpg
-shan,讪訕,汕疝,讪訕,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-30-28/15 (340).jpg
-niann,捻鲶,鯰捻,鲶鯰,/home/gloryi/Pictures/OldPhotos/Summer_2014/20130709_143101.jpg
-fuu,辅輔,脯黼,郙辅,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-12/Lion cub resting on tree branch, South Luangwa National Park, Zambia.jpg"
-jaang,张帐,涨账,胀张,"/home/gloryi/Pictures/Windows 10 Spotlight/2016-10/Burgh Island from Bantham, Bigbury-on-Sea, Devon, England, UK.jpg"
-bii,比吡,妣秕,比吡,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-50-43/41 (1191).jpg
-jya,頰郟,莢蛺,鋏頰,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-07/Matsumio bridge and trees, Mikuni Pass, Daisetsuzan National Park, Hokkaido, Japan.jpg"
-wei,围圍,涠潿,围圍,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-44-33/01 (948).jpg
-ya,呀雅,讶訝,鸦鴉,/home/gloryi/Pictures/Windows 10 Spotlight/2018-02/Solar eclipse illustration.jpg
-jiau,礁蕉,鹪鷦,僬蟭,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-01/Fly over Mount McKinley, Denali, Alaska, USA.jpg"
-垂,hand,down,let down,suspend,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/696.jpg
-脉,veins,arteries,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2178.jpg
-狱,jail,case,prison,lawsuit,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/735.jpg
-惑,doubt,confuse,baffle,mislead,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2192.jpg
-陶,pottery,ceramics,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1041.jpg
-兽,beast,animal,bestial,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/705.jpg
-帐,tent,screen,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/116.jpg
-昌,good,proper,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1825.jpg
-铺,shop,bed,store,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1184.jpg
-惧,fear,dread,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/249.jpg
-盗,rob,steal,thief,bandit,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/586.jpg
-辉,luster,brightness,brilliance,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1521.jpg
-扣,rap,tap,knock,strike,button,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2041.jpg
-董,direct,surname,supervise,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2266.jpg
-迁,move,shift,change,transfer,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/630.jpg
-愉,please,pleasant,delightful,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2361.jpg
-慕,desire,admire,long for,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/298.jpg
-塑,sculpt,plastics,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2117.jpg
-羞,shy,shame,disgrace,ashamed,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1659.jpg
-谅,excuse,guess,forgive,presume,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1028.jpg
+B stds fr,[b]adass,[b]ecame,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-38-15/15 (257).jpg
+Doning right,things are,easy,if hard,some wrong,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-05/Vestrahorn Mountain summer landscape in sunrise scence, Hofn, Iceland.jpg"
+E+K,creati,vity,/home/gloryi/Pictures/MovieShots/Metropolis/64 (515).jpg
+Магазин,10 фич,10 связей,медитация,фиксация,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-41-14/33 (610).jpg
+myopsy,too sharp,focus,/home/gloryi/Pictures/MovieShots/photo-gallery-2023-01-04-23-32-19/55 (265).jpg
+Протеин,умыться,рынки,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-03/Landscape with Castelluccio di Norcia and flowering, Perugia, Italy.jpg"
+A is nt,nt-a,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-01/Fireworks lighting up night Sky with skyline of Dresden and reflections in river Elbe, Germany.jpg"
+Код и,процессы,достаточны.,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-05/Landscape with a lone tree, Jutland, Denmark.jpg"
+T stds fr,[t]ime,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-06/Christmas Eve Luminarias in Santa Fe, New Mexico, USA.jpg"
+Constructiv,dilemma,if p ðn q &,if r ðn s,but p or,r ðrf,q or s,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-08/Beagle Channel with Les Eclaireurs Lighthouse near Ushuaia, Tierra del Fuego, Argentina.jpg"
+吗,mha,(question tag),"/home/gloryi/Pictures/Windows 10 Spotlight/2018-06/Mountain trail in Madeira above the clouds on a sunny afternoon, Portugal.jpg"
+买,mae,to buy,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-03/Štrbské pleso mountain lake panorama, High Tatras, Slovakia.jpg"
+猫,mhau,cat,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-03/Detail of old colorful sail boats in the lake, Pokhara, Nepal.jpg"
+没,mei,verbs negative prefi,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-11/Landscape at Wetterstein mountains nearby castle Elmau at winter, Bavaria, Germany.jpg"
+没关系,mei guan shi,it doesn't matter,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-11/Mooserboden Reservoir and Mooser Dam near Kaprun, Austria.jpg"
+生日,sheng ryh,birthday,/home/gloryi/Pictures/Windows 10 Spotlight/2020-05/Flock of sheep on grassy field against sky.jpg
+时间,shyr jian,time,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-08/Windmill at sunset, Öland, Sweden.jpg"
+事情,shyh ching,affair,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-09/Toroweap Overlook sunrise, Grand Canyon National Park, Arizona, USA.jpg"
+手表,shoou beau,wrist watch,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-03/Sunset at Saguaro National Park near Tucson, Arizona, USA.jpg"
+手机,shoou ji,cell phone,"/home/gloryi/Pictures/Windows 10 Spotlight/2022-01/Famous rock of Pedra Furada beach, Jericoacoara National Park, Ceará, Brazil.jpg"
+票,piaw,ticket,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-03/Wildflowers in spring at Bunaroo valley, Ikara-Flinders Ranges National Park, South Australia.jpg"
+妻子,chi tzy,wife,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-06/Coral reef with golden butterflyfish (Chaetodon semilarvatus), Red Sea, Egypt.jpg"
+起床,chii chwang,to get out of bed,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-06/Smooth tide pool surrounded by rock at sunset, Ersdalen, Hönö, Öckerö, Sweden.jpg"
+千,chian,a swing,"/home/gloryi/Pictures/Windows 10 Spotlight/2018-06/Colonnade in Gustav III´s Museum of Antiquities in Stockholm Palace, Sweden.jpg"
+晴,chyng,clear,"/home/gloryi/Pictures/Windows 10 Spotlight/2020-11/Sunset La Engorda Valley, San José de Maipo, Chile.jpg"
+送,sonq,to deliver,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-05/Sunrise over lake Finnsjön, Mölnlycke, Sweden.jpg"
+所以,suoo yii,therefore,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-12/Under Pont de la Concorde over river Seine in Paris, France.jpg"
+它,ta,it,"/home/gloryi/Pictures/Windows 10 Spotlight/2017-06/Buffaloes (bison) in Hayden Valley, Yellowstone National Park, Wyoming, USA.jpg"
+踢,ti,to kick,"/home/gloryi/Pictures/Windows 10 Spotlight/2021-02/Dragon Bridge over the River Hàn in Da Nang at night, Vietnam.jpg"
+题,tyi,topic,"/home/gloryi/Pictures/Windows 10 Spotlight/2021-09/Beautiful landscape by sea at Andøya, Vesterålen archipelago, Norway.jpg"
+衫,shirt,robe,gown,jacket,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/672.jpg
+伞,umbrella,parasol,parachute,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/458.jpg
+刮,shave,scrape,pare off,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/174.jpg
+糕,cakes,pastry,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/552.jpg
+裙,skirt,apron,petticoat,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1734.jpg
+凝,freeze,congeal,coagulate,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1605.jpg
+腾,fly,run,rise,gallop,prance,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2460.jpg
+埋,bury,secrete,conceal,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1029.jpg
+涌,surge up,bubble up,gush forth,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1507.jpg
+晋,advance,promote,increase,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2377.jpg
+告,tell,inform,accuse,announce,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1445.jpg
+边,edge,side,margin,border,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1194.jpg
+望,expect,to hope,to look at,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/2446.jpg
+共,all,total,to share,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1467.jpg
+让,allow,yield,permit,concede,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/533.jpg
+狠,cruel,vicious,extreme,severely,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/554.jpg
+鉴,mirror,reflect,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1462.jpg
+械,weapons,implements,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/965.jpg
+割,cut,cede,divide,partition,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/8.jpg
+揭,raise,lift up,surname,/mnt/X/WORKSHOP/Scripts/chained_learning/images_for_learn/1709.jpg

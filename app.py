@@ -4,6 +4,7 @@ from time_utils import global_timer, Counter, Progression
 from six_words_mode import SixtletsProcessor
 from config import TEST_LANG_DATA
 from config import NEXT_APP_DIR, NEXT_APP
+from config import HAPTIC_FEEDBACK
 import subprocess
 from text_morfer import textMorfer
 from ui_elements import UpperLayout
@@ -13,6 +14,9 @@ def hex_to_rgb(hx):
     hx = hx[1:]
     resulting = tuple(int(hx[i:i+2], 16) for i in (0, 2, 4))
     return resulting
+    
+def inter_simple(v1, v2, p):
+    return v1 + (v2 - v1) * p
 
 
 pygame.init()
@@ -62,7 +66,8 @@ pixels_per_ms = Y/time_to_cross_screen
 delta_timer = global_timer(pygame)
 
 new_line_counter = Counter(time_to_appear)
-quadra_timer = Counter(5000)
+quadra_timer = Counter(6000)
+haptic_timer = Counter(1000)
 morfer_timer = Counter(2000)
 
 upper_stats = UpperLayout(pygame, display_surface, X, Y)
@@ -153,6 +158,11 @@ for time_delta in delta_timer:
 
     display_surface.blit(trans_surface, (0, 0))
     display_surface.blit(trans_surface2, (0, 0))
+
+    if haptic_timer.is_tick(time_delta):
+        if HAPTIC_FEEDBACK:
+            inter_freq = int(inter_simple(0, 65000, quadra_w_perce1))
+            HAPTIC_FEEDBACK(higher_freq  = inter_freq)
 
     pygame.display.update()
 
